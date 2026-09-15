@@ -1,68 +1,69 @@
+/* Reconstruction du design system "GaleriePOFDesignSystem" (le bundle _ds/ n'a
+   pas été fourni) : jetons + classes typographiques inférés de leur usage dans
+   « Atlas - carte d'ouvertures.dc.html ». Aesthétique atlas : crème + encre. */
+
+:root {
+  /* Encres & fonds */
+  --color-bg: #fbf6e9;
+  --color-surface: #f3ecd8;
+  --color-desk: #efe6cf;
+  --color-ink: #1a1a1a;
+  --color-ink-inverse: #fdf8e8;
+  --color-ink-surface: #201d17;
+  --color-ink-muted: #7d7566;
+
+  /* Primaire (orange atlas) */
+  --color-primary: #f4a259;
+  --color-primary-ink: #b5621c;
+
+  /* Sémantiques (alignés sur la rampe win rate) */
+  --color-critical: #9c3b41;
+  --color-critical-ink: #8a2f35;
+  --color-success: #3f6b5c;
+  --color-success-ink: #35594c;
+  --color-warning: #d98b2b;
+  --color-warning-ink: #9a6212;
+
+  /* Teintes (fond pâle + liséré) */
+  --tint-primary-bg: #fbe9d6;  --tint-primary-bc: #f0c79b;
+  --tint-warning-bg: #f7ecd4;  --tint-warning-bc: #e6c78a;
+  --tint-critical-bg: #f3dcdd; --tint-critical-bc: #dca9ac;
+  --tint-success-bg: #dde9e4;  --tint-success-bc: #a9c7bd;
+  --tint-neutral-bg: #eee9db;  --tint-neutral-bc: #d8d0bc;
+
+  /* Rayons */
+  --radius-xs: 3px;
+  --radius-sm: 8px;
+
+  /* Bordures */
+  --border-hairline: 1px solid rgba(26, 26, 26, .12);
+  --border-hairline-soft: 1px solid rgba(26, 26, 26, .07);
+  --border-input: 1px solid rgba(26, 26, 26, .22);
+  --border-dashed: 1.5px dashed rgba(26, 26, 26, .25);
+
+  /* Ombres */
+  --shadow-soft: 0 1px 3px rgba(26, 20, 10, .12);
+  --shadow-lift: 0 24px 60px rgba(26, 20, 10, .28);
+
+  /* Familles */
+  --font-display: "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-interface: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
 * { box-sizing: border-box; }
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  color: #1b1b1b;
-  background: #f4f4f2;
+body { margin: 0; background: var(--color-bg); }
+
+@keyframes fadein { from { opacity: 0 } to { opacity: 1 } }
+
+/* Classes typographiques du système (t-*) */
+.t-eyebrow {
+  font: 600 11px/1.2 var(--font-interface);
+  letter-spacing: .12em; text-transform: uppercase; color: var(--color-ink-muted);
 }
-
-.app { display: flex; height: 100vh; }
-
-.side {
-  width: 320px;
-  flex: 0 0 320px;
-  padding: 18px;
-  overflow-y: auto;
-  border-right: 1px solid #ddd;
-  background: #fbfbfa;
-}
-.side h1 { font-size: 18px; margin: 0 0 16px; }
-
-.canvas { flex: 1; overflow: auto; padding: 8px; }
-.loading { padding: 40px; color: #888; }
-
-.ctl { margin-bottom: 18px; }
-.ctl label { display: block; font-size: 13px; margin-bottom: 6px; }
-.ctl small { display: block; color: #888; font-size: 11px; margin-top: 4px; }
-.ctl input[type="range"] { width: 100%; }
-
-.seg { display: flex; gap: 6px; }
-.seg button {
-  flex: 1; padding: 7px; border: 1px solid #ccc; background: #fff;
-  border-radius: 5px; cursor: pointer; font-size: 13px;
-}
-.seg button.on { background: #1b1b1b; color: #fff; border-color: #1b1b1b; }
-
-/* Légende */
-.legend { font-size: 12px; margin: 18px 0; padding: 12px; background: #fff; border: 1px solid #eee; border-radius: 6px; }
-.legend > div { margin-bottom: 10px; }
-.lg-label { display: inline-block; font-weight: 600; width: 82px; }
-.grad { height: 12px; border-radius: 3px; margin: 4px 0 2px;
-  background: linear-gradient(90deg, #d73027, #fee08b, #1a9850); }
-.grad-ends { display: flex; justify-content: space-between; color: #888; font-size: 10px; }
-.lg-row { display: flex; align-items: center; flex-wrap: wrap; }
-.op { display: inline-block; width: 14px; height: 12px; background: #555; margin: 0 4px; border-radius: 2px; }
-.op-lo { opacity: 0.25; }
-.op-hi { opacity: 1; }
-.brd-mine { display: inline-block; width: 14px; height: 12px; border: 1.2px solid #1b1b1b; margin: 0 4px; }
-.brd-opp { display: inline-block; width: 14px; height: 12px; border: 1px dashed #b9b9b9; margin: 0 4px; }
-.transpo { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #6a3d9a; margin: 0 4px; }
-
-/* Panneau d'info au survol */
-.info { background: #fff; border: 1px solid #eee; border-radius: 6px; padding: 12px; font-size: 13px; }
-.info.muted { color: #999; }
-.info .line { font-family: ui-monospace, monospace; font-weight: 600; margin-bottom: 4px; word-break: break-word; }
-.info .who { color: #666; font-size: 12px; margin-bottom: 8px; }
-.info table { width: 100%; border-collapse: collapse; }
-.info td { padding: 2px 0; }
-.info td:first-child { color: #888; }
-.info td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
-
-.stat { margin-top: 14px; color: #666; font-size: 12px; }
-.err { margin-top: 14px; color: #b00; font-size: 12px; }
-
-/* Icicle */
-svg text.axis { font-size: 9px; fill: #aaa; }
-svg text.san { font-size: 9px; fill: #111; font-family: ui-monospace, monospace; }
-rect.node { cursor: pointer; }
-rect.node:hover { stroke: #000 !important; stroke-width: 1.6 !important; stroke-dasharray: none !important; }
+.t-h2 { font: 700 18px/1.2 var(--font-display); letter-spacing: .01em; color: var(--color-ink); }
+.t-num { font: 700 18px/1 var(--font-mono); color: var(--color-ink); font-variant-numeric: tabular-nums; }
+.t-num--lg { font: 700 28px/1 var(--font-mono); color: var(--color-ink); font-variant-numeric: tabular-nums; }
+.t-caption--xs { font: 400 11px/1.35 var(--font-interface); color: var(--color-ink-muted); }
+.t-body--sm { font: 400 13px/1.4 var(--font-interface); color: var(--color-ink); }
+.t-editorial--sm { font: italic 400 13px/1.45 var(--font-display); color: var(--color-ink); }

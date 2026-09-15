@@ -36,9 +36,32 @@ export interface Meta {
   date_from: string | null;
   date_to: string | null;
   counts_by_color: Record<string, number>;
+  sync: Record<string, { username: string; last_synced: string | null }>;
 }
 
 export type Color = "white" | "black";
+export type Source = "lichess" | "chesscom";
+
+export interface IngestResult {
+  seen: number;
+  total: number;
+  counts_by_color: Record<string, number>;
+}
+
+// Va chercher les parties d'un joueur (incrémental côté serveur). Peut être long
+// au tout premier import : le serveur traite le flux avant de répondre.
+export async function ingestGames(source: Source, username: string): Promise<IngestResult> {
+  const r = await fetch("/api/ingest", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ source, username }),
+  });
+  if (!r.ok) {
+    const detail = await r.json().catch(() => null);
+    throw new Error(detail?.detail ? String(detail.detail) : `API ${r.status}`);
+  }
+  return r.json();
+}
 
 // On récupère l'arbre à un plancher bas ; le slider élague ensuite côté client
 // (instantané, aucune requête réseau). On ne descend jamais sous ce plancher.

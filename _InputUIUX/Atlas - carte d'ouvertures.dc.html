@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/designsystemepersomain-019e2204-25b1-728c-8811-1beb84bedde6/tokens.css">
+<link rel="stylesheet" href="_ds/designsystemepersomain-019e2204-25b1-728c-8811-1beb84bedde6/styles.css">
+<script src="_ds/designsystemepersomain-019e2204-25b1-728c-8811-1beb84bedde6/_ds_bundle.js"></script>
+<style>body{margin:0;background:var(--color-bg)}@keyframes fadein{from{opacity:0}to{opacity:1}}</style>
+</helmet>
+<div class="ds-page" style="display:flex;flex-direction:column;height:100vh;overflow:hidden">
+
+  <header style="flex:0 0 auto;height:56px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 16px;background:var(--color-ink-surface)">
+    <div style="display:flex;align-items:baseline;gap:10px;min-width:190px">
+      <span style="font:700 16px/1 var(--font-display);text-transform:uppercase;letter-spacing:.05em;color:var(--color-ink-inverse)">Atlas</span>
+      <span style="font:400 11px/1 var(--font-interface);text-transform:uppercase;letter-spacing:.12em;color:rgba(253,248,232,.55)">d'ouvertures</span>
+    </div>
+    <nav style="display:flex;gap:6px">
+      <button onClick="{{ goParties }}" style="{{ tabPartiesStyle }}">Mes parties</button>
+      <button onClick="{{ goCahier }}" style="{{ tabCahierStyle }}">Mon cahier</button>
+    </nav>
+    <div style="display:flex;gap:8px;min-width:190px;justify-content:flex-end">
+      <button onClick="{{ openImport }}" style="height:32px;padding:0 12px;border-radius:var(--radius-sm);border:1px solid rgba(253,248,232,.28);background:transparent;color:var(--color-ink-inverse);font:600 11px/1 var(--font-interface);letter-spacing:.1em;text-transform:uppercase;cursor:pointer">Importer</button>
+      <button onClick="{{ openNew }}" style="height:32px;padding:0 12px;border-radius:var(--radius-sm);border:1px solid transparent;background:var(--color-primary);color:var(--color-ink-inverse);font:600 11px/1 var(--font-interface);letter-spacing:.1em;text-transform:uppercase;cursor:pointer">Nouvelle ouverture</button>
+    </div>
+  </header>
+
+  <div style="flex:1;display:flex;min-height:0">
+    <sc-if value="{{ railClosed }}">
+      <div style="flex:0 0 46px;display:flex;flex-direction:column;align-items:center;gap:14px;padding:12px 0;border-right:var(--border-hairline);background:var(--color-surface)">
+        <button onClick="{{ toggleRail }}" title="Déplier les réglages" style="width:34px;height:34px;border-radius:var(--radius-sm);border:var(--border-input);background:var(--color-bg);color:var(--color-ink);font-size:13px;cursor:pointer">→</button>
+        <span style="writing-mode:vertical-rl;font:600 11px var(--font-interface);letter-spacing:.12em;text-transform:uppercase;color:var(--color-ink-muted)">Réglages</span>
+      </div>
+    </sc-if>
+    <sc-if value="{{ railOpen }}" hint-placeholder-val="{{ true }}">
+    <aside style="flex:0 0 268px;padding:16px;border-right:var(--border-hairline);background:var(--color-surface);overflow-y:auto">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:16px">
+        <span class="t-eyebrow">Réglages</span>
+        <button onClick="{{ toggleRail }}" title="Replier les réglages" style="width:30px;height:30px;border-radius:var(--radius-sm);border:var(--border-input);background:var(--color-bg);color:var(--color-ink);font-size:13px;cursor:pointer">←</button>
+      </div>
+
+      <sc-if value="{{ isParties }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <div class="t-eyebrow" style="margin-bottom:6px">Répertoire</div>
+          <div style="display:flex;gap:8px;margin-bottom:20px">
+            <button onClick="{{ pickWhite }}" style="{{ segWhite }}">Blancs · 3187</button>
+            <button onClick="{{ pickBlack }}" style="{{ segBlack }}">Noirs · 3116</button>
+          </div>
+
+          <div class="t-eyebrow" style="margin-bottom:6px">Seuil d'élagage</div>
+          <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px">
+            <span class="t-num">{{ minGames }}</span>
+            <span class="t-caption--xs">parties mini par branche</span>
+          </div>
+          <input type="range" min="2" max="60" value="{{ minGames }}" onChange="{{ onSlider }}" style="width:100%;accent-color:var(--color-primary)">
+          <div class="t-editorial--sm" style="margin:8px 0 20px;color:var(--color-ink-muted)">Glisse à gauche pour voir le sous-bois.</div>
+
+          <div class="t-eyebrow" style="margin-bottom:6px">Profondeur</div>
+          <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px">
+            <span class="t-num">{{ depth }}</span>
+            <span class="t-caption--xs">demi-coups affichés</span>
+          </div>
+          <input type="range" min="2" max="14" value="{{ depth }}" onChange="{{ onDepth }}" style="width:100%;accent-color:var(--color-primary);margin-bottom:22px">
+
+          <div class="t-eyebrow" style="margin-bottom:8px">Cadence</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:22px">
+            <sc-for list="{{ speeds }}" as="s" hint-placeholder-count="4">
+              <button onClick="{{ s.toggle }}" style="{{ s.style }}">{{ s.label }}</button>
+            </sc-for>
+          </div>
+
+          <div style="border-top:var(--border-hairline);padding-top:14px">
+            <div class="t-eyebrow" style="margin-bottom:10px">Lecture de la carte</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+              <span style="width:56px;height:10px;border-radius:var(--radius-xs);background:linear-gradient(90deg,#9c3b41,#ded2b4,#3f6b5c)"></span>
+              <span class="t-caption--xs">win rate</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+              <svg width="56" height="18" style="display:block"><path d="M4 3h48" stroke="#1a1a1a" stroke-width="8" opacity=".3" stroke-linecap="round"></path><path d="M4 10h48" stroke="#1a1a1a" stroke-width="3.5" opacity=".3" stroke-linecap="round"></path><path d="M4 15h48" stroke="#1a1a1a" stroke-width="1.5" opacity=".3" stroke-linecap="round"></path></svg>
+              <span class="t-caption--xs">épaisseur = part du total des parties</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:22px;border-radius:11px;background:#3f6b5c;border:1.8px solid rgba(26,26,26,.45);font:600 11px var(--font-mono);color:#fdf8e8">e4</span>
+              <span class="t-caption--xs">coups des blancs — aplat</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:22px;border-radius:11px;background:#9c3b41;box-shadow:inset 0 0 0 3px #fdf8e8;border:1.8px solid rgba(26,26,26,.45);font:600 11px var(--font-mono);color:#1a1a1a">c5</span>
+              <span class="t-caption--xs">coups des noirs — centre clair</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+              <span style="padding:3px 7px;border-radius:var(--radius-sm);background:#1a1a1a;color:#fdf8e8;font:600 10px/1 var(--font-display);letter-spacing:.08em;text-transform:uppercase">Nom</span>
+              <span class="t-caption--xs">ouverture reconnue</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:12px">
+              <svg width="56" height="22" style="display:block"><circle cx="13" cy="11" r="9" fill="#ded2b4" stroke="#1a1a1a" stroke-width="3.5"></circle></svg>
+              <span class="t-caption--xs">branche repliée</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:12px">
+              <svg width="56" height="24" style="display:block"><circle cx="13" cy="12" r="9" fill="#ded2b4" stroke="#f4a259" stroke-width="4"></circle></svg>
+              <span class="t-caption--xs">dans mon cahier</span>
+            </div>
+          </div>
+
+          <div style="border-top:var(--border-hairline);margin-top:16px;padding-top:14px">
+            <div class="t-eyebrow" style="margin-bottom:8px">Branches tuées · {{ killedCount }}</div>
+            <sc-for list="{{ killedList }}" as="k" hint-placeholder-count="1">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:var(--border-hairline-soft)">
+                <span style="min-width:0;display:flex;flex-direction:column;gap:2px">
+                  <span style="font:600 12px/1.2 var(--font-display);letter-spacing:.06em;text-transform:uppercase;color:var(--color-ink);text-decoration:line-through">{{ k.name }}</span>
+                  <span style="font:400 11px/1.3 var(--font-mono);color:var(--color-ink-muted)">{{ k.line }}</span>
+                </span>
+                <button onClick="{{ k.revive }}" style="flex:none;height:26px;padding:0 8px;border-radius:var(--radius-sm);border:var(--border-input);background:var(--color-bg);color:var(--color-ink);font:600 10px/1 var(--font-interface);letter-spacing:.09em;text-transform:uppercase;cursor:pointer">Rendre</button>
+              </div>
+            </sc-for>
+            <sc-if value="{{ noKilled }}">
+              <div class="t-editorial--sm" style="color:var(--color-ink-muted)">Aucune branche tuée. Survole un nœud pour en écarter une.</div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isCahier }}">
+        <div>
+          <div style="border-bottom:var(--border-hairline);padding-bottom:14px;margin-bottom:16px">
+            <div class="t-eyebrow" style="margin-bottom:8px">Lecture de l'arbre</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:22px;border-radius:11px;background:#4a453c;border:1.8px solid rgba(26,26,26,.45);font:600 11px var(--font-mono);color:#fdf8e8">e4</span>
+              <span class="t-caption--xs">coups des blancs</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:22px;border-radius:11px;background:#f0e6c8;border:1.8px solid rgba(26,26,26,.45);font:600 11px var(--font-mono);color:#1a1a1a">e5</span>
+              <span class="t-caption--xs">coups des noirs</span>
+            </div>
+            <div class="t-editorial--sm" style="color:var(--color-ink-muted)">Pas de win rate ici : ces lignes ne sont pas encore jouées.</div>
+          </div>
+          <div class="t-eyebrow" style="margin-bottom:8px">Le cahier</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(0,0,0,.06);border:var(--border-hairline);border-radius:var(--radius-sm);overflow:hidden;margin-bottom:20px">
+            <div style="background:var(--color-bg);padding:12px 10px"><div class="t-num--lg">5</div><div class="t-eyebrow">chapitres</div></div>
+            <div style="background:var(--color-bg);padding:12px 10px"><div class="t-num--lg">50</div><div class="t-eyebrow">lignes</div></div>
+            <div style="background:var(--color-bg);padding:12px 10px"><div class="t-num--lg" style="color:var(--color-warning-ink)">7</div><div class="t-eyebrow">à revoir</div></div>
+            <div style="background:var(--color-bg);padding:12px 10px"><div class="t-num--lg" style="color:var(--color-critical-ink)">2</div><div class="t-eyebrow">trous</div></div>
+          </div>
+
+          <div class="t-eyebrow" style="margin-bottom:6px">Couverture des parties</div>
+          <div style="height:8px;border-radius:var(--radius-xs);background:rgba(26,26,26,.08);overflow:hidden;margin-bottom:6px">
+            <div style="width:64%;height:100%;background:var(--color-primary)"></div>
+          </div>
+          <div class="t-caption--xs" style="margin-bottom:22px">64 % de tes parties suivent une ligne du cahier.</div>
+
+          <div style="border-top:var(--border-hairline);padding-top:14px">
+            <div class="t-eyebrow" style="margin-bottom:8px">Bibliothèques importées</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;justify-content:space-between;gap:8px"><span class="t-body--sm">lichess/chess-openings</span><span class="t-caption--xs">3 471 pos.</span></div>
+              <div style="display:flex;justify-content:space-between;gap:8px"><span class="t-body--sm">Italienne — Chessable</span><span class="t-caption--xs">86 lignes</span></div>
+            </div>
+            <div style="margin-top:12px">
+              <x-import component-from-global-scope="GaleriePOFDesignSystem_019e22.Button" variant="quiet" compact="{{ true }}" full="{{ true }}" onClick="{{ openImport }}" hint-size="100%,32px">Importer une bibliothèque</x-import>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+    </aside>
+    </sc-if>
+
+    <main style="flex:1;min-width:0;display:flex;flex-direction:column">
+
+      <div style="flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 20px;border-bottom:var(--border-hairline)">
+        <div>
+          <h2 class="t-h2" style="margin:0">{{ pageTitle }}</h2>
+          <div class="t-caption--xs" style="margin-top:2px">{{ pageSub }}</div>
+        </div>
+        <sc-if value="{{ isCahier }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;gap:6px">
+            <button onClick="{{ cahierArbre }}" style="{{ segArbre }}">Arbre voulu</button>
+            <button onClick="{{ cahierChapitres }}" style="{{ segChap }}">Chapitres</button>
+          </div>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ showGraph }}" hint-placeholder-val="{{ true }}">
+        <div ref="{{ scrollRef }}" onPointerDown="{{ onPanStart }}" style="{{ scrollStyle }}">
+          <div style="position:sticky;top:0;left:0;z-index:8;display:flex;gap:6px;padding:8px;width:max-content">
+            <sc-for list="{{ zooms }}" as="z" hint-placeholder-count="3">
+              <button onClick="{{ z.pick }}" style="{{ z.style }}">{{ z.label }}</button>
+            </sc-for>
+            <span style="display:inline-flex;align-items:center;height:28px;padding:0 10px;white-space:nowrap;border-radius:var(--radius-sm);background:var(--color-surface);border:var(--border-hairline);color:var(--color-ink-muted);font:600 10px/1 var(--font-interface);letter-spacing:.09em">{{ zoomLabel }} · ⌘ molette · glisser</span>
+          </div>
+          <div style="{{ canvasOuter }}" onWheel="{{ onWheel }}">
+          <div style="{{ canvasStyle }}" onMouseLeave="{{ clearHover }}">
+            <svg width="{{ gw }}" height="{{ gh }}" style="display:block;position:absolute;inset:0">
+              <sc-for list="{{ links }}" as="l" hint-placeholder-count="40">
+                <path d="{{ l.d }}" fill="none" stroke="{{ l.stroke }}" stroke-width="{{ l.w }}" stroke-opacity="{{ l.op }}" stroke-dasharray="{{ l.dash }}" stroke-linecap="round"></path>
+              </sc-for>
+              <sc-for list="{{ nodes }}" as="n" hint-placeholder-count="40">
+                <g onMouseEnter="{{ n.enter }}" onClick="{{ n.click }}" onDoubleClick="{{ n.dblClick }}" style="cursor:pointer">
+                  <circle cx="{{ n.x }}" cy="{{ n.y }}" r="{{ n.rHit }}" fill="transparent"></circle>
+                  <circle cx="{{ n.x }}" cy="{{ n.y }}" r="{{ n.r }}" fill="{{ n.fill }}" fill-opacity="{{ n.op }}" stroke="{{ n.stroke }}" stroke-width="{{ n.sw }}"></circle>
+                  <sc-if value="{{ n.negative }}">
+                    <circle cx="{{ n.x }}" cy="{{ n.y }}" r="{{ n.ringInner }}" fill="#fdf8e8" stroke="rgba(26,26,26,.2)" stroke-width="1"></circle>
+                  </sc-if>
+
+                </g>
+              </sc-for>
+            </svg>
+            <sc-for list="{{ nodes }}" as="n" hint-placeholder-count="40">
+              <div style="{{ n.sanStyle }}">{{ n.san }}</div>
+            </sc-for>
+            <sc-for list="{{ nodes }}" as="n" hint-placeholder-count="40">
+              <div style="{{ n.badgeStyle }}">{{ n.badge }}</div>
+            </sc-for>
+            <sc-for list="{{ labels }}" as="l" hint-placeholder-count="12">
+              <div style="{{ l.style }}">{{ l.name }}</div>
+            </sc-for>
+            <sc-if value="{{ hasTip }}">
+              <div style="{{ tip.style }}">
+                <div style="position:absolute;left:0;top:0;bottom:0;width:6px;border-radius:8px 0 0 8px;background:{{ tip.tone }}"></div>
+                <div class="t-eyebrow">{{ tip.eyebrow }}</div>
+                <div style="font:600 13px/1.3 var(--font-mono);color:var(--color-ink);margin:4px 0 10px">{{ tip.line }}</div>
+                <sc-if value="{{ tip.showStats }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;align-items:baseline;gap:8px">
+                    <span class="t-num--lg">{{ tip.winrate }}</span>
+                    <span class="t-caption--xs">{{ tip.metricLabel }}</span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:3px;margin-top:8px">
+                    <span class="t-caption--xs">{{ tip.wdl }}</span>
+                    <span class="t-caption--xs">{{ tip.prob }}</span>
+                    <span class="t-caption--xs">{{ tip.conf }}</span>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ tip.noStats }}">
+                  <span class="t-caption--xs">{{ tip.side }}</span>
+                </sc-if>
+                <div style="display:flex;gap:10px;align-items:center;margin-top:10px;padding-top:8px;border-top:var(--border-hairline)">
+                  <span style="font:600 11px/1 var(--font-interface);letter-spacing:.09em;text-transform:uppercase;color:var(--color-primary-ink)">{{ tip.hint }}</span>
+                  <span style="font:600 11px/1 var(--font-interface);letter-spacing:.09em;text-transform:uppercase;color:var(--color-ink-muted)">Double-clic : analyse</span>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showChapitres }}">
+        <div style="flex:1;min-height:0;overflow-y:auto;padding:20px;background:var(--color-desk)">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;max-width:1200px">
+            <sc-for list="{{ chapters }}" as="c" hint-placeholder-count="5">
+              <article style="display:flex;background:var(--color-surface);border:var(--border-hairline);border-radius:var(--radius-sm);box-shadow:var(--shadow-soft);overflow:hidden">
+                <div style="flex:0 0 6px;background:{{ c.tone }}"></div>
+                <div style="flex:1;min-width:0;padding:16px">
+                  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+                    <h3 class="t-h2" style="margin:0">{{ c.name }}</h3>
+                    <span style="{{ c.badgeStyle }}">{{ c.badge }}</span>
+                  </div>
+                  <div class="t-caption--xs" style="margin:6px 0 10px">{{ c.meta }}</div>
+                  <div style="font:400 12px/1.4 var(--font-mono);color:var(--color-ink);padding:8px 10px;background:var(--color-bg);border-radius:var(--radius-sm);margin-bottom:10px">{{ c.line }}</div>
+                  <p class="t-editorial--sm" style="margin:0 0 14px">{{ c.note }}</p>
+                  <div style="height:6px;border-radius:var(--radius-xs);background:rgba(26,26,26,.08);overflow:hidden;margin-bottom:6px">
+                    <div style="{{ c.barStyle }}"></div>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                    <span class="t-caption--xs">{{ c.progress }}</span>
+                    <button onClick="{{ c.open }}" style="height:32px;padding:0 12px;border-radius:var(--radius-sm);border:1px solid var(--color-primary);background:transparent;color:var(--color-primary-ink);font:600 11px/1 var(--font-interface);letter-spacing:.1em;text-transform:uppercase;cursor:pointer">Ouvrir</button>
+                  </div>
+                </div>
+              </article>
+            </sc-for>
+            <button onClick="{{ openNew }}" style="min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:var(--border-dashed);border-radius:var(--radius-sm);background:transparent;cursor:pointer">
+              <span style="font:400 24px/1 var(--font-interface);color:var(--color-ink-muted)">+</span>
+              <span class="t-eyebrow">Saisir une ouverture</span>
+              <span class="t-editorial--sm" style="color:var(--color-ink-muted);max-width:220px;text-align:center">À la main, sans partir de tes parties.</span>
+            </button>
+          </div>
+        </div>
+      </sc-if>
+    </main>
+  </div>
+
+  <sc-if value="{{ boardOpen }}">
+    <div onClick="{{ closeBoard }}" style="position:fixed;inset:0;background:rgba(26,26,26,.55);display:flex;align-items:center;justify-content:center;padding:24px;animation:fadein .16s ease-out;z-index:40">
+      <div onClick="{{ stop }}" style="width:min(940px,100%);max-height:calc(100vh - 48px);overflow:auto;background:var(--color-bg);border-radius:var(--radius-sm);box-shadow:var(--shadow-lift)">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 18px;border-bottom:var(--border-hairline);background:var(--color-surface)">
+          <div>
+            <div class="t-eyebrow">{{ board.eyebrow }}</div>
+            <h3 class="t-h2" style="margin:2px 0 0">{{ board.title }}</h3>
+          </div>
+          <button onClick="{{ closeBoard }}" style="flex:none;width:34px;height:34px;border-radius:var(--radius-sm);border:var(--border-input);background:var(--color-bg);color:var(--color-ink);font-size:14px;cursor:pointer">✕</button>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:20px;padding:18px">
+          <div style="flex:0 0 auto">
+            <div style="display:grid;grid-template-columns:repeat(8,56px);grid-template-rows:repeat(8,56px);padding:10px;background:#262421;border-radius:var(--radius-sm);box-shadow:var(--shadow-soft)">
+              <sc-for list="{{ squares }}" as="sq" hint-placeholder-count="64">
+                <div style="{{ sq.style }}" onClick="{{ sq.click }}" draggable="{{ sq.draggable }}" onDragStart="{{ sq.dragStart }}" onDragOver="{{ sq.dragOver }}" onDrop="{{ sq.drop }}">
+                  <sc-if value="{{ sq.hasCoord }}">
+                    <span style="{{ sq.coordStyle }}">{{ sq.coord }}</span>
+                  </sc-if>
+                  <sc-if value="{{ sq.isTarget }}">
+                    <span style="{{ sq.targetStyle }}"></span>
+                  </sc-if>
+                  <span style="{{ sq.pieceStyle }}">{{ sq.glyph }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:12px">
+              <button onClick="{{ board.flip }}" style="height:38px;padding:0 12px;border-radius:var(--radius-sm);border:var(--border-input);background:var(--color-bg);cursor:pointer;font:600 11px/1 var(--font-interface);letter-spacing:.09em;text-transform:uppercase;color:var(--color-ink)">Retourner</button>
+              <div style="flex:1"></div>
+              <button onClick="{{ board.first }}" style="width:38px;height:38px;border-radius:var(--radius-sm);border:var(--border-input);background:var(--color-bg);cursor:pointer;font-size:13px">⇤</button>
+              <button onClick="{{ board.prev }}" style="width:38px;height:38px;border-radius:var(--radius-sm);border:var(--border-input);background:var(--color-bg);cursor:pointer;font-size:13px">←</button>
+              <button onClick="{{ board.next }}" style="width:38px;height:38px;border-radius:var(--radius-sm);border:var(--border-input);background:var(--color-bg);cursor:pointer;font-size:13px">→</button>
+            </div>
+            <div class="t-caption--xs" style="margin-top:8px">{{ board.plyLabel }}</div>
+          </div>
+
+          <div style="flex:1;min-width:300px;display:flex;flex-direction:column;gap:16px">
+            <sc-if value="{{ board.isNew }}">
+              <div>
+                <div class="t-eyebrow" style="margin-bottom:6px">Nom de l'ouverture</div>
+                <input value="{{ board.newName }}" onChange="{{ board.setName }}" placeholder="Attaque Jobava, ma version" style="width:100%;height:44px;padding:0 12px;box-sizing:border-box;border:var(--border-input);border-radius:var(--radius-sm);background:var(--color-bg);font:400 14px var(--font-interface);color:var(--color-ink)">
+                <div class="t-editorial--sm" style="margin-top:8px;color:var(--color-ink-muted)">Déplace les pièces une par une. Rien n'est tiré de tes parties.</div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ board.hasStats }}">
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(0,0,0,.06);border:var(--border-hairline);border-radius:var(--radius-sm);overflow:hidden">
+                <div style="background:var(--color-surface);padding:10px"><div class="t-num">{{ board.n }}</div><div class="t-eyebrow">parties</div></div>
+                <div style="background:var(--color-surface);padding:10px"><div class="t-num" style="{{ board.wrStyle }}">{{ board.wr }}</div><div class="t-eyebrow">win rate</div></div>
+                <div style="background:var(--color-surface);padding:10px"><div class="t-num">{{ board.prob }}</div><div class="t-eyebrow">prob. de jeu</div></div>
+                <div style="background:var(--color-surface);padding:10px"><div class="t-num">{{ board.wilson }}</div><div class="t-eyebrow">wilson bas</div></div>
+              </div>
+            </sc-if>
+
+            <div>
+              <div class="t-eyebrow" style="margin-bottom:6px">La ligne</div>
+              <div style="background:var(--color-surface);border:var(--border-hairline);border-radius:var(--radius-sm);overflow:hidden;max-height:186px;overflow-y:auto">
+                <sc-for list="{{ board.rows }}" as="r" hint-placeholder-count="5">
+                  <div style="{{ r.style }}">
+                    <span style="flex:0 0 34px;font:600 11px var(--font-interface);color:var(--color-ink-muted);text-align:right">{{ r.no }}</span>
+                    <button onClick="{{ r.wGo }}" style="{{ r.wStyle }}">{{ r.w }}</button>
+                    <button onClick="{{ r.bGo }}" style="{{ r.bStyle }}">{{ r.b }}</button>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ board.emptyLine }}">
+                  <div style="padding:12px"><span class="t-editorial--sm" style="color:var(--color-ink-muted)">Position de départ.</span></div>
+                </sc-if>
+              </div>
+            </div>
+
+            <div>
+              <sc-if value="{{ board.showNext }}" hint-placeholder-val="{{ true }}">
+              <div class="t-eyebrow" style="margin-bottom:6px">{{ board.nextLabel }}</div>
+              <div style="display:flex;flex-direction:column;border:var(--border-hairline);border-radius:var(--radius-sm);overflow:hidden">
+                <sc-for list="{{ board.candidates }}" as="c" hint-placeholder-count="3">
+                  <button onClick="{{ c.play }}" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border:none;border-bottom:var(--border-hairline-soft);background:var(--color-bg);cursor:pointer;text-align:left">
+                    <span style="flex:0 0 54px;font:600 13px var(--font-mono);color:var(--color-ink)">{{ c.san }}</span>
+                    <span style="flex:1;min-width:0;height:8px;border-radius:var(--radius-xs);background:rgba(26,26,26,.08);overflow:hidden"><span style="{{ c.barStyle }}"></span></span>
+                    <span class="t-caption--xs" style="flex:0 0 120px;text-align:right">{{ c.meta }}</span>
+                  </button>
+                </sc-for>
+                <sc-if value="{{ board.noCandidates }}">
+                  <div style="padding:12px;background:var(--color-bg)">
+                    <div class="t-editorial--sm" style="color:var(--color-ink-muted)">Plus rien ici dans tes parties. Déplace une pièce pour continuer.</div>
+                  </div>
+                </sc-if>
+              </div>
+              </sc-if>
+              <div class="t-editorial--sm" style="margin-top:10px;color:var(--color-ink-muted)">Prends une pièce sur l'échiquier et pose-la : la ligne continue, même hors de tes parties.</div>
+              <sc-if value="{{ board.offBook }}">
+                <div style="display:flex;align-items:center;gap:8px;margin-top:10px">
+                  <span style="display:inline-block;white-space:nowrap;font:600 11px var(--font-interface);letter-spacing:.09em;text-transform:uppercase;padding:4px 8px;border-radius:var(--radius-sm);border:1px solid var(--tint-warning-bc);background:var(--tint-warning-bg);color:var(--color-warning-ink)">Hors de mes parties</span>
+                  <span class="t-caption--xs">Coups posés à la main — ajoute la ligne au cahier pour la garder.</span>
+                </div>
+              </sc-if>
+            </div>
+
+            <div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:4px;border-top:var(--border-hairline)">
+              <x-import component-from-global-scope="GaleriePOFDesignSystem_019e22.Button" variant="primary" onClick="{{ board.addToCahier }}" hint-size="auto,44px">{{ board.addLabel }}</x-import>
+              <x-import component-from-global-scope="GaleriePOFDesignSystem_019e22.Button" variant="critical" onClick="{{ board.kill }}" hint-size="auto,44px">Tuer cette branche</x-import>
+              <x-import component-from-global-scope="GaleriePOFDesignSystem_019e22.Button" variant="ghost" onClick="{{ closeBoard }}" hint-size="auto,38px">Fermer</x-import>
+            </div>
+            <sc-if value="{{ board.flash }}">
+              <div style="padding:10px 12px;border-radius:var(--radius-sm);background:var(--tint-success-bg);border:1px solid var(--tint-success-bc);color:var(--color-success-ink);font:400 13px var(--font-interface)">{{ board.flashText }}</div>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ importOpen }}">
+    <div onClick="{{ closeImport }}" style="position:fixed;inset:0;background:rgba(26,26,26,.55);display:flex;align-items:center;justify-content:center;padding:24px;animation:fadein .16s ease-out;z-index:50">
+      <div onClick="{{ stop }}" style="width:min(560px,100%);background:var(--color-bg);border-radius:var(--radius-sm);box-shadow:var(--shadow-lift);overflow:hidden">
+        <div style="padding:14px 18px;border-bottom:var(--border-hairline);background:var(--color-surface)">
+          <div class="t-eyebrow">Cahier d'ouverture</div>
+          <h3 class="t-h2" style="margin:2px 0 0">Importer une bibliothèque</h3>
+        </div>
+        <div style="padding:18px;display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ sources }}" as="s" hint-placeholder-count="4">
+              <button onClick="{{ s.pick }}" style="{{ s.style }}">
+                <span style="display:block;font:600 14px/1.2 var(--font-interface);color:var(--color-ink)">{{ s.name }}</span>
+                <span style="display:block;margin-top:3px;font:400 12px/1.4 var(--font-interface);color:var(--color-ink-muted)">{{ s.desc }}</span>
+              </button>
+            </sc-for>
+          </div>
+          <div style="border:var(--border-dashed);border-radius:var(--radius-sm);padding:22px;text-align:center">
+            <div class="t-eyebrow" style="margin-bottom:6px">Dépose le fichier ici</div>
+            <div class="t-editorial--sm" style="color:var(--color-ink-muted)">PGN, TSV ou CSV. Les lignes deviennent des chapitres.</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="checkbox" style="accent-color:var(--color-primary);width:16px;height:16px">
+            <span class="t-body--sm">Fusionner avec les chapitres existants</span>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:6px;border-top:var(--border-hairline)">
+            <x-import component-from-global-scope="GaleriePOFDesignSystem_019e22.Button" variant="quiet" onClick="{{ closeImport }}" hint-size="auto,44px">Annuler</x-import>
+            <x-import component-from-global-scope="GaleriePOFDesignSystem_019e22.Button" variant="primary" onClick="{{ closeImport }}" hint-size="auto,44px">Importer</x-import>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;minGames&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:6,&quot;min&quot;:2,&quot;max&quot;:60,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Carte&quot;},&quot;metric&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Score brut&quot;,&quot;Wilson bas&quot;],&quot;default&quot;:&quot;Score brut&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Carte&quot;},&quot;showNames&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Carte&quot;}}">
+// ---- Répertoire authoré : 20 lignes réelles, SAN + UCI (l'échiquier rejoue les UCI).
+const LINES = [
+  { s: "e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 a6", u: "e2e4 c7c5 g1f3 d7d6 d2d4 c5d4 f3d4 g8f6 b1c3 a7a6", n: 214, sc: 0.47 },
+  { s: "e4 c5 Nf3 Nc6 d4 cxd4 Nxd4 g6", u: "e2e4 c7c5 g1f3 b8c6 d2d4 c5d4 f3d4 g7g6", n: 138, sc: 0.55 },
+  { s: "e4 c5 Nf3 e6 d4 cxd4 Nxd4 a6", u: "e2e4 c7c5 g1f3 e7e6 d2d4 c5d4 f3d4 a7a6", n: 96, sc: 0.51 },
+  { s: "e4 c5 Nc3 Nc6 g3 g6", u: "e2e4 c7c5 b1c3 b8c6 g2g3 g7g6", n: 61, sc: 0.62 },
+  { s: "e4 e5 Nf3 Nc6 Bc4 Bc5 c3 Nf6 d4 exd4", u: "e2e4 e7e5 g1f3 b8c6 f1c4 f8c5 c2c3 g8f6 d2d4 e5d4", n: 268, sc: 0.61 },
+  { s: "e4 e5 Nf3 Nc6 Bc4 Nf6 Ng5 d5 exd5 Na5", u: "e2e4 e7e5 g1f3 b8c6 f1c4 g8f6 f3g5 d7d5 e4d5 c6a5", n: 121, sc: 0.58 },
+  { s: "e4 e5 Nf3 Nc6 Bb5 a6 Ba4 Nf6 O-O Be7", u: "e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 e1g1 f8e7", n: 152, sc: 0.54 },
+  { s: "e4 e5 Nf3 Nf6 Nxe5 d6 Nf3 Nxe4", u: "e2e4 e7e5 g1f3 g8f6 f3e5 d7d6 e5f3 f6e4", n: 44, sc: 0.38 },
+  { s: "e4 e5 Nf3 d6 d4", u: "e2e4 e7e5 g1f3 d7d6 d2d4", n: 31, sc: 0.66 },
+  { s: "e4 e6 d4 d5 Nc3 Bb4", u: "e2e4 e7e6 d2d4 d7d5 b1c3 f8b4", n: 118, sc: 0.44 },
+  { s: "e4 e6 d4 d5 Nc3 Nf6 e5 Nfd7", u: "e2e4 e7e6 d2d4 d7d5 b1c3 g8f6 e4e5 f6d7", n: 92, sc: 0.57 },
+  { s: "e4 e6 d4 d5 Nd2 Nf6 e5 Nfd7", u: "e2e4 e7e6 d2d4 d7d5 b1d2 g8f6 e4e5 f6d7", n: 47, sc: 0.5 },
+  { s: "e4 e6 d4 d5 exd5 exd5", u: "e2e4 e7e6 d2d4 d7d5 e4d5 e6d5", n: 29, sc: 0.4 },
+  { s: "e4 c6 d4 d5 Nc3 dxe4 Nxe4 Bf5", u: "e2e4 c7c6 d2d4 d7d5 b1c3 d5e4 c3e4 c8f5", n: 87, sc: 0.42 },
+  { s: "e4 c6 d4 d5 e5 Bf5", u: "e2e4 c7c6 d2d4 d7d5 e4e5 c8f5", n: 54, sc: 0.49 },
+  { s: "e4 c6 d4 d5 exd5 cxd5 c4", u: "e2e4 c7c6 d2d4 d7d5 e4d5 c6d5 c2c4", n: 73, sc: 0.63 },
+  { s: "e4 d5 exd5 Qxd5 Nc3 Qa5", u: "e2e4 d7d5 e4d5 d8d5 b1c3 d5a5", n: 66, sc: 0.68 },
+  { s: "e4 d6 d4 Nf6 Nc3 g6 Be2 Bg7", u: "e2e4 d7d6 d2d4 g8f6 b1c3 g7g6 f1e2 f8g7", n: 58, sc: 0.6 },
+  { s: "e4 g6 d4 Bg7 Nc3 d6", u: "e2e4 g7g6 d2d4 f8g7 b1c3 d7d6", n: 41, sc: 0.57 },
+  { s: "e4 Nf6 e5 Nd5 d4 d6", u: "e2e4 g8f6 e4e5 f6d5 d2d4 d7d6", n: 34, sc: 0.53 }
+];
+
+const NAMES = {
+  "e4": "1.e4",
+  "e4 c5": "Sicilienne", "e4 e5": "Ouverture du pion roi", "e4 e6": "Française",
+  "e4 c6": "Caro-Kann", "e4 d5": "Scandinave", "e4 d6": "Pirc", "e4 g6": "Moderne", "e4 Nf6": "Alekhine",
+  "e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 a6": "Najdorf",
+  "e4 c5 Nf3 Nc6 d4 cxd4 Nxd4 g6": "Accélérée",
+  "e4 c5 Nf3 e6 d4 cxd4 Nxd4 a6": "Kan",
+  "e4 c5 Nc3": "Sicilienne fermée",
+  "e4 e5 Nf3 Nc6 Bc4 Bc5": "Italienne",
+  "e4 e5 Nf3 Nc6 Bc4 Nf6 Ng5": "Deux cavaliers",
+  "e4 e5 Nf3 Nc6 Bb5": "Espagnole",
+  "e4 e5 Nf3 Nf6": "Russe",
+  "e4 e5 Nf3 d6": "Philidor",
+  "e4 e6 d4 d5 Nc3 Bb4": "Winawer",
+  "e4 e6 d4 d5 Nc3 Nf6": "Classique",
+  "e4 e6 d4 d5 Nd2": "Tarrasch",
+  "e4 e6 d4 d5 exd5": "Échange",
+  "e4 c6 d4 d5 Nc3": "Caro classique",
+  "e4 c6 d4 d5 e5": "Caro avance",
+  "e4 c6 d4 d5 exd5 cxd5 c4": "Panov"
+};
+
+const IN_CAHIER = [
+  "e4 e5 Nf3 Nc6 Bc4 Bc5", "e4 e5 Nf3 Nc6 Bb5", "e4 e6 d4 d5 Nc3 Nf6",
+  "e4 c6 d4 d5 exd5 cxd5 c4", "e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 a6"
+];
+
+// Cahier : ce que je VEUX jouer (indépendant de mes parties).
+const CAHIER_LINES = [
+  { s: "e4 e5 Nf3 Nc6 Bc4 Bc5 c3 Nf6 d3 d6 O-O", u: "e2e4 e7e5 g1f3 b8c6 f1c4 f8c5 c2c3 g8f6 d2d3 d7d6 e1g1", n: 14, sc: 0.9 },
+  { s: "e4 e5 Nf3 Nc6 Bc4 Nf6 d3 Bc5 c3", u: "e2e4 e7e5 g1f3 b8c6 f1c4 g8f6 d2d3 f8c5 c2c3", n: 9, sc: 0.7 },
+  { s: "e4 e5 Nf3 Nc6 Bb5 a6 Ba4 Nf6 O-O Be7 Re1", u: "e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 e1g1 f8e7 f1e1", n: 11, sc: 0.55 },
+  { s: "e4 e6 d4 d5 Nc3 Nf6 e5 Nfd7 f4 c5", u: "e2e4 e7e6 d2d4 d7d5 b1c3 g8f6 e4e5 f6d7 f2f4 c7c5", n: 8, sc: 0.35 },
+  { s: "e4 c6 d4 d5 exd5 cxd5 c4 Nf6 Nc3 e6", u: "e2e4 c7c6 d2d4 d7d5 e4d5 c6d5 c2c4 g8f6 b1c3 e7e6", n: 7, sc: 0.6 },
+  { s: "e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 a6 Be3 e5", u: "e2e4 c7c5 g1f3 d7d6 d2d4 c5d4 f3d4 g8f6 b1c3 a7a6 c1e3 e7e5", n: 6, sc: 0.3 }
+];
+
+const CHAPTERS = [
+  { name: "Italienne", badge: "Solide", tone: "var(--color-primary)", badgeTone: "primary", meta: "12 lignes · 268 parties · revu il y a 3 jours", line: "1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.c3 Nf6 5.d3", pct: 82, note: "Le d3 lent me convient mieux que d4 : je perds moins de parties dans le centre ouvert.", ref: "e4 e5 Nf3 Nc6 Bc4 Bc5" },
+  { name: "Espagnole", badge: "À revoir", tone: "var(--color-warning)", badgeTone: "warning", meta: "9 lignes · 152 parties · revu il y a 6 semaines", line: "1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O", pct: 41, note: "Je connais le début et rien du milieu. Les variantes fermées sont à écrire.", ref: "e4 e5 Nf3 Nc6 Bb5" },
+  { name: "Française — Classique", badge: "Trou", tone: "var(--color-critical)", badgeTone: "critical", meta: "6 lignes · 92 parties · win rate 57 %", line: "1.e4 e6 2.d4 d5 3.Nc3 Nf6 4.e5 Nfd7 5.f4", pct: 23, note: "Après 5.f4 c5 je joue au hasard. C'est là que je perds le plus de temps à la pendule.", ref: "e4 e6 d4 d5 Nc3 Nf6" },
+  { name: "Panov", badge: "Neuf", tone: "var(--color-success)", badgeTone: "success", meta: "8 lignes · 73 parties · importé de Chessable", line: "1.e4 c6 2.d4 d5 3.exd5 cxd5 4.c4 Nf6 5.Nc3", pct: 64, note: "Importé la semaine dernière, jamais joué en blitz. À tester avant de le garder.", ref: "e4 c6 d4 d5 exd5 cxd5 c4" },
+  { name: "Anti-Najdorf", badge: "Solide", tone: "var(--color-primary)", badgeTone: "primary", meta: "15 lignes · 214 parties · win rate 47 %", line: "1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6 6.Be3", pct: 71, note: "Mon plus gros volume et mon plus mauvais score. Le cahier existe, mes coups ne le suivent pas.", ref: "e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 a6" }
+];
+
+const SOURCES = [
+  { name: "Fichier PGN", desc: "Une étude exportée, un fichier de lignes annotées." },
+  { name: "Étude Lichess", desc: "Collée par URL. Chaque chapitre devient un chapitre." },
+  { name: "Export Chessable", desc: "CSV de cours. Les lignes gardent leur ordre." },
+  { name: "Livre lichess/chess-openings", desc: "Noms d'ouverture par position (TSV), pour nommer la carte." }
+];
+
+// ---- Échiquier
+const START = "rnbqkbnrpppppppp................................PPPPPPPPRNBQKBNR".split("");
+const GLYPH = { K: "♚", Q: "♛", R: "♜", B: "♝", N: "♞", P: "♟", k: "♚", q: "♛", r: "♜", b: "♝", n: "♞", p: "♟" };
+function idx(sq) { return (8 - +sq[1]) * 8 + (sq.charCodeAt(0) - 97); }
+function applyUcis(ucis) {
+  const b = START.slice();
+  let last = null;
+  for (const u of ucis) {
+    const a = idx(u.slice(0, 2)), z = idx(u.slice(2, 4));
+    const piece = b[a];
+    b[z] = piece; b[a] = ".";
+    if (piece === "K" && u === "e1g1") { b[idx("f1")] = "R"; b[idx("h1")] = "."; }
+    if (piece === "K" && u === "e1c1") { b[idx("d1")] = "R"; b[idx("a1")] = "."; }
+    if (piece === "k" && u === "e8g8") { b[idx("f8")] = "r"; b[idx("h8")] = "."; }
+    if (piece === "k" && u === "e8c8") { b[idx("d8")] = "r"; b[idx("a8")] = "."; }
+    last = [a, z];
+  }
+  return { b, last };
+}
+
+function sqName(i) { return String.fromCharCode(97 + (i % 8)) + (8 - Math.floor(i / 8)); }
+function isWhite(p) { return p !== "." && p === p.toUpperCase(); }
+// SAN approché, déduit du plateau : suffisant pour une exploration à la souris.
+function pseudoSan(board, from, to) {
+  const p = board[from], capture = board[to] !== ".";
+  const dest = sqName(to);
+  if (p.toUpperCase() === "K" && Math.abs((to % 8) - (from % 8)) === 2) return (to % 8) > (from % 8) ? "O-O" : "O-O-O";
+  if (p.toUpperCase() === "P") return capture ? sqName(from)[0] + "x" + dest : dest;
+  return p.toUpperCase() + (capture ? "x" : "") + dest;
+}
+
+const DIRS = { R: [[0,1],[0,-1],[1,0],[-1,0]], B: [[1,1],[1,-1],[-1,1],[-1,-1]] };
+DIRS.Q = DIRS.R.concat(DIRS.B);
+const JUMPS = { N: [[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]], K: DIRS.Q };
+function at(b, file, rank) { return (file < 0 || file > 7 || rank < 0 || rank > 7) ? null : b[rank * 8 + file]; }
+// Coups pseudo-légaux (sans échec ni prise en passant) : assez pour explorer.
+function legalTargets(b, from) {
+  const p = b[from]; if (p === ".") return [];
+  const white = isWhite(p), t = p.toUpperCase();
+  const file = from % 8, rank = Math.floor(from / 8), out = [];
+  const push = (f2, r2) => { const q = at(b, f2, r2); if (q === null) return false; if (q === ".") { out.push(r2 * 8 + f2); return true; } if (isWhite(q) !== white) out.push(r2 * 8 + f2); return false; };
+  if (t === "P") {
+    const dir = white ? -1 : 1, start = white ? 6 : 1;
+    if (at(b, file, rank + dir) === ".") {
+      out.push((rank + dir) * 8 + file);
+      if (rank === start && at(b, file, rank + 2 * dir) === ".") out.push((rank + 2 * dir) * 8 + file);
+    }
+    for (const df of [-1, 1]) {
+      const q = at(b, file + df, rank + dir);
+      if (q && q !== "." && isWhite(q) !== white) out.push((rank + dir) * 8 + file + df);
+    }
+    return out;
+  }
+  if (t === "N" || t === "K") {
+    for (const [df, dr] of JUMPS[t]) push(file + df, rank + dr);
+    if (t === "K") { // roques, si les cases sont libres
+      const row = white ? 7 : 0;
+      if (from === row * 8 + 4) {
+        if (b[row * 8 + 5] === "." && b[row * 8 + 6] === "." && b[row * 8 + 7].toUpperCase() === "R") out.push(row * 8 + 6);
+        if (b[row * 8 + 1] === "." && b[row * 8 + 2] === "." && b[row * 8 + 3] === "." && b[row * 8].toUpperCase() === "R") out.push(row * 8 + 2);
+      }
+    }
+    return out;
+  }
+  for (const [df, dr] of DIRS[t === "Q" ? "Q" : t]) {
+    let f2 = file + df, r2 = rank + dr;
+    while (push(f2, r2)) { f2 += df; r2 += dr; }
+  }
+  return out;
+}
+
+function wilsonLower(sc, n) {
+  const z = 1.96, p = sc;
+  const denom = 1 + z * z / n, centre = p + z * z / (2 * n);
+  const m = z * Math.sqrt(p * (1 - p) / n + z * z / (4 * n * n));
+  return Math.max(0, (centre - m) / denom);
+}
+function mix(a, b, t) { return a.map((v, i) => Math.round(v + (b[i] - v) * t)); }
+// Rampe opaque : critical → crème neutre → primary. Aucune bulle n'est transparente.
+// Trois encres du système à luminosité voisine : critical-ink → ink-muted → primary-ink.
+const STOPS = [[156, 59, 65], [222, 210, 180], [63, 107, 92]];
+function winRamp(sc) {
+  const t = Math.max(0, Math.min(1, (sc - 0.4) / 0.2)) * (STOPS.length - 1);
+  const i = Math.min(STOPS.length - 2, Math.floor(t));
+  return mix(STOPS[i], STOPS[i + 1], t - i);
+}
+function winColor(sc) { const c = winRamp(sc); return "rgb(" + c[0] + "," + c[1] + "," + c[2] + ")"; }
+function inkOn(sc) {
+  const c = winRamp(sc);
+  return (0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]) / 255 > 0.58 ? "#1a1a1a" : "#fdf8e8";
+}
+
+function buildTrie(lines) {
+  const root = { san: null, key: "", ply: -1, n: 0, sc: 0, children: [], ucis: [] };
+  for (const L of lines) {
+    const sans = L.s.split(" "), ucis = L.u.split(" ");
+    let node = root; node.n += L.n; node.sc += L.sc * L.n;
+    for (let i = 0; i < sans.length; i++) {
+      let c = node.children.find(x => x.san === sans[i]);
+      if (!c) {
+        c = { san: sans[i], key: (node.key ? node.key + " " : "") + sans[i], ply: i, n: 0, sc: 0, children: [], ucis: ucis.slice(0, i + 1) };
+        node.children.push(c);
+      }
+      c.n += L.n; c.sc += L.sc * L.n;
+      node = c;
+    }
+  }
+  const norm = (nd) => { nd.score = nd.n ? nd.sc / nd.n : 0; nd.children.sort((a, b) => b.n - a.n); nd.children.forEach(norm); };
+  norm(root);
+  return root;
+}
+
+const TREE_W = buildTrie(LINES);
+const TREE_C = buildTrie(CAHIER_LINES);
+
+function findNode(root, key) {
+  if (!key) return root;
+  let nd = root;
+  for (const san of key.split(" ")) {
+    const c = nd.children.find(x => x.san === san);
+    if (!c) return nd;
+    nd = c;
+  }
+  return nd;
+}
+
+class Component extends DCLogic {
+  state = {
+    view: "parties", cahierTab: "arbre", color: "white",
+    minGames: null, speeds: ["Blitz", "Rapide"],
+    hover: null, killed: ["e4 e5 Nf3 d6"], cahier: IN_CAHIER.slice(),
+    modal: null, path: [], newName: "", probe: "", flash: null
+  };
+
+  get seuil() { return this.state.minGames ?? this.props.minGames ?? 6; }
+
+  activeTree() {
+    return this.state.view === "cahier" ? TREE_C : TREE_W;
+  }
+
+  // Layout tidy top→bottom sur l'arbre élagué.
+  graph() {
+    const isCahier = this.state.view === "cahier";
+    const min = isCahier ? 1 : this.seuil;
+    const killed = this.state.killed;
+    const maxPly = this.state.depth ?? 8;
+    const collapsed = this.state.collapsed || [];
+    const inCahierLine = (key) => !isCahier && this.onCahierLine(key);
+    const countDesc = (nd) => nd.children.reduce((s, c) => s + 1 + countDesc(c), 0);
+    const keep = (nd) => nd.n >= min && nd.ply < maxPly && !killed.some(k => nd.key === k || nd.key.indexOf(k + " ") === 0);
+    const prune = (nd) => ({ ...nd, children: collapsed.indexOf(nd.key) >= 0 ? [] : nd.children.filter(keep).map(prune) });
+    const root = prune(this.activeTree());
+
+    const rowH = 96, padX = 90, padY = 64;
+    let leaf = 0;
+    const place = (nd, depth) => {
+      nd.depth = depth;
+      if (!nd.children.length) { nd.ux = leaf++; }
+      else {
+        nd.children.forEach(c => place(c, depth + 1));
+        const us = nd.children.map(c => c.ux);
+        nd.ux = (Math.min.apply(null, us) + Math.max.apply(null, us)) / 2;
+      }
+      return nd;
+    };
+    place(root, 0);
+    const maxDepth = (nd) => nd.children.length ? 1 + Math.max(...nd.children.map(maxDepth)) : 0;
+    const depth = maxDepth(root);
+    const cols = Math.max(1, leaf - 1);
+    const width = Math.max(980, cols * 84 + padX * 2);
+    const height = depth * rowH + padY * 2 + 52;
+    const X = (u) => padX + (cols ? u / cols * (width - padX * 2) : (width - padX * 2) / 2);
+    const Y = (d) => padY + (depth - d) * rowH; // racine en bas, exploration vers le haut
+
+    const maxN = root.n || 1;
+    const nodes = [], links = [];
+    const walk = (nd) => {
+      for (const c of nd.children) {
+        const w = Math.max(1.2, Math.min(20, 20 * Math.sqrt(c.n / (root.n || 1))));
+        const x1 = X(nd.ux), y1 = Y(nd.depth), x2 = X(c.ux), y2 = Y(c.depth);
+        const my = y1 + (y2 - y1) * 0.55;
+        links.push({
+          d: "M" + x1 + " " + y1 + " C" + x1 + " " + my + " " + x2 + " " + (y2 - (y2 - y1) * 0.45) + " " + x2 + " " + y2,
+          stroke: inCahierLine(c.key) ? "#f4a259" : "#1a1a1a",
+          w: inCahierLine(c.key) ? Math.max(3, w) : w,
+          op: inCahierLine(c.key) ? 0.95 : 0.3,
+          dash: null
+        });
+        walk(c);
+      }
+      if (nd.depth === 0 && !nd.san) {
+        nodes.push({
+          key: "__root", san: this.state.color === "white" ? "Blancs" : "Noirs", name: isCahier ? "Ce que je veux jouer" : "3 187 parties",
+          x: X(nd.ux), y: Y(0), r: 30, rHit: 38, fill: "#1a1a1a", op: 1, stroke: "#1a1a1a", sw: 1,
+          nd, inCahier: false
+        });
+      }
+      for (const c of nd.children) {
+        // Rayon constant : ni le volume ni la longueur du coup ne le font varier.
+        const r = 26;
+        const x = X(c.ux), y = Y(c.depth);
+        const byWhite = c.ply % 2 === 0; // le camp qui joue dicte l'encre et l'anneau
+        // countDesc doit tourner sur l'arbre source : prune() a déjà vidé les enfants du nœud replié.
+        const hidden = collapsed.indexOf(c.key) >= 0 ? Math.max(1, countDesc(findNode(this.activeTree(), c.key))) : 0;
+        const onCahier = inCahierLine(c.key);
+        nodes.push({
+          key: c.key, san: c.san, name: NAMES[c.key] || null, byWhite, hidden,
+          x, y, r, rHit: r + 8,
+          fill: isCahier ? (byWhite ? "#4a453c" : "#f0e6c8") : winColor(c.score),
+
+
+          op: 1,
+          stroke: onCahier ? "#f4a259" : "rgba(26,26,26,.45)",
+          sw: onCahier ? 4 : hidden ? 3.5 : 1.8,
+          nd: c, inCahier: onCahier
+        });
+      }
+    };
+    walk(root);
+    const seen = {};
+    const uniq = nodes.filter(n => seen[n.key] ? false : (seen[n.key] = true));
+    return { nodes: uniq, links, width, height, root };
+  }
+
+  // Un nœud est « dans le cahier » s'il est sur le chemin d'une ligne enregistrée, pas au-delà.
+  onCahierLine(key) {
+    return this.state.cahier.some(k => k === key || k.indexOf(key + " ") === 0);
+  }
+
+  isCahierView() { return this.state.view === "cahier"; }
+
+  // L'arbre reste centré tant que l'utilisateur n'a pas navigué à la souris.
+  // Le ref du conteneur recentre lui-même : les hooks de cycle de vie tombent
+  // avant que la nouvelle largeur du canevas ne soit commitée.
+  attachScroll = (el) => {
+    this._scroll = el;
+    if (el) this.scheduleCenter(true);
+  };
+
+  scheduleCenter(force) {
+    if (force) this._userPanned = false;
+    clearTimeout(this._centerT);
+    this._centerT = setTimeout(() => {
+      const el = this._scroll;
+      if (!el || (this._userPanned && !force)) return;
+      el.scrollLeft = Math.max(0, (el.scrollWidth - el.clientWidth) / 2);
+    }, 0);
+  }
+
+  toggleCollapse(key) {
+    if (key === "__root") return;
+    const c = this.state.collapsed || [];
+    this.setState({ collapsed: c.indexOf(key) >= 0 ? c.filter(k => k !== key) : c.concat([key]), hover: key });
+  }
+
+  boardTree() {
+    return (this.state.boardSrc || "parties") === "cahier" ? TREE_C : TREE_W;
+  }
+
+  openBoard(key) {
+    this.setState({ modal: "board", boardSrc: this.state.view === "cahier" ? "cahier" : "parties", path: key === "__root" ? [] : key.split(" "), free: [], sel: null, flash: null, hover: null });
+  }
+
+  boardVals() {
+    const isNew = this.state.modal === "new";
+    const path = this.state.path;
+    // Descente réelle dans l'arbre ; les coups explorés hors arbre sont gardés à part.
+    let nd = isNew ? null : this.boardTree();
+    const inTree = [];
+    const off = [];
+    for (const san of path) {
+      const c = nd && nd.children.find(x => x.san === san);
+      if (c) { inTree.push(c); nd = c; } else { off.push(san); }
+    }
+    const cur = inTree.length ? inTree[inTree.length - 1] : null;
+    const free = this.state.free || [];
+    const ucis = (cur ? cur.ucis : []).concat(free.map(m => m.uci));
+    const pos = applyUcis(ucis);
+    const ply = (cur ? cur.ply + 1 : 0) + free.length;
+    const whiteToMove = ply % 2 === 0;
+    const sel = this.state.sel;
+
+    const playSquares = (from, to) => {
+      const uci = sqName(from) + sqName(to);
+      const nextInTree = free.length === 0
+        ? (cur ? cur.children : (isNew ? [] : this.boardTree().children)).find(c => c.ucis[c.ucis.length - 1] === uci)
+        : null;
+      if (nextInTree) this.setState({ path: path.concat([nextInTree.san]), sel: null, flash: null });
+      else this.setState({ free: free.concat([{ uci, san: pseudoSan(pos.b, from, to) }]), sel: null, flash: null });
+    };
+    const onSquare = (i) => {
+      const p = pos.b[i];
+      if (sel == null) { if (p !== "." && isWhite(p) === whiteToMove) this.setState({ sel: i }); return; }
+      if (i === sel) { this.setState({ sel: null }); return; }
+      if (p !== "." && isWhite(p) === isWhite(pos.b[sel])) { this.setState({ sel: i }); return; }
+      if (legalTargets(pos.b, sel).indexOf(i) < 0) { this.setState({ sel: null }); return; }
+      playSquares(sel, i);
+    };
+    const parentN = inTree.length > 1 ? inTree[inTree.length - 2].n : (this.boardTree().n || 1);
+
+    const flipped = !!this.state.flipped;
+    const targets = sel == null ? [] : legalTargets(pos.b, sel);
+    const squares = [];
+    const order = [];
+    for (let k = 0; k < 64; k++) order.push(flipped ? 63 - k : k);
+    for (const i of order) {
+      const file = i % 8, rank = Math.floor(i / 8);
+      const dark = (file + rank) % 2 === 1;
+      const isLast = pos.last && (i === pos.last[0] || i === pos.last[1]);
+      const p = pos.b[i];
+      const white = p !== "." && p === p.toUpperCase();
+      const isTarget = targets.indexOf(i) >= 0;
+      const showFile = flipped ? rank === 0 : rank === 7;
+      const showRank = flipped ? file === 7 : file === 0;
+      const selected = sel === i;
+      const grabbable = p !== "." && white === whiteToMove;
+      squares.push({
+        style: "position:relative;display:flex;align-items:center;justify-content:center;user-select:none;" +
+          "cursor:" + (grabbable ? "grab" : isTarget ? "pointer" : "default") + ";" +
+          "background:" + (selected ? "#b9b04e" : isLast ? "#cdc86a" : dark ? "#8779d0" : "#eeeef2") + ";" +
+          (selected ? "box-shadow:inset 0 0 0 3px rgba(26,26,26,.55);" : ""),
+        pieceStyle: "position:relative;z-index:2;font-size:46px;line-height:1;pointer-events:none;" +
+          "filter:drop-shadow(0 1px 1px rgba(28,26,23,.45));" +
+          (p === "." ? "" : white
+            ? "color:#f1ecd6;-webkit-text-stroke:2.4px #17150f;paint-order:stroke fill;"
+            : "color:#17150f;-webkit-text-stroke:2.4px #ece8d8;paint-order:stroke fill;"),
+        glyph: p === "." ? "" : GLYPH[p],
+        hasCoord: showFile || showRank,
+        coord: showRank ? String(8 - rank) : String.fromCharCode(97 + file),
+        coordStyle: "position:absolute;z-index:3;" + (showRank ? "top:3px;left:4px" : "bottom:2px;right:4px") +
+          ";font:700 11px/1 var(--font-interface);letter-spacing:.02em;color:" + (dark ? "#eeeef2" : "#8779d0"),
+        isTarget,
+        targetStyle: p === "."
+          ? "position:absolute;z-index:1;width:20px;height:20px;border-radius:50%;background:rgba(28,26,23,.28)"
+          : "position:absolute;z-index:1;inset:3px;border-radius:50%;border:5px solid rgba(28,26,23,.28)",
+        draggable: grabbable,
+        click: () => onSquare(i),
+        dragStart: () => this.setState({ sel: i }),
+        dragOver: (e) => e.preventDefault(),
+        drop: (e) => { e.preventDefault(); if (sel != null && sel !== i) playSquares(sel, i); }
+      });
+    }
+
+    const allSans = path.concat(free.map(m => m.san));
+    const moves = allSans.map((san, i) => {
+      const isFree = i >= path.length;
+      const last = i === allSans.length - 1;
+      return {
+        san, current: last, free: isFree,
+        label: (i % 2 === 0 ? (i / 2 + 1) + "." : "") + san,
+        style: "height:28px;padding:0 8px;border-radius:var(--radius-sm);cursor:pointer;font:600 12px var(--font-mono);" +
+          (last
+            ? "border:1px solid var(--color-primary);background:var(--tint-primary-bg);color:var(--color-primary-ink)"
+            : isFree
+              ? "border:1px solid var(--tint-warning-bc);background:var(--tint-warning-bg);color:var(--color-warning-ink)"
+              : "border:var(--border-input);background:var(--color-bg);color:var(--color-ink)"),
+        go: () => isFree
+          ? this.setState({ free: free.slice(0, i - path.length + 1), sel: null, flash: null })
+          : this.setState({ path: path.slice(0, i + 1), free: [], sel: null, flash: null })
+      };
+    });
+
+    const cellStyle = (m, filled) => "flex:1;min-width:0;height:26px;padding:0 8px;text-align:left;border:none;border-radius:var(--radius-sm);background:" +
+      (!filled ? "transparent;color:var(--color-ink-muted);cursor:default" :
+        m.current ? "var(--tint-primary-bg);color:var(--color-primary-ink);cursor:pointer" :
+          m.free ? "var(--tint-warning-bg);color:var(--color-warning-ink);cursor:pointer" : "transparent;color:var(--color-ink);cursor:pointer") +
+      ";font:600 13px var(--font-mono)";
+    const rows = [];
+    for (let i = 0; i < moves.length; i += 2) {
+      const w = moves[i], b = moves[i + 1];
+      rows.push({
+        no: (i / 2 + 1) + ".",
+        style: "display:flex;align-items:center;gap:8px;padding:5px 10px;border-bottom:var(--border-hairline-soft)",
+        w: w ? w.san : "", b: b ? b.san : "…",
+        wStyle: cellStyle(w || {}, !!w), bStyle: cellStyle(b || {}, !!b),
+        wGo: w ? w.go : () => {}, bGo: b ? b.go : () => {}
+      });
+    }
+
+    const kids = free.length ? [] : (cur ? cur.children : (isNew ? [] : this.boardTree().children));
+    const kidMax = kids.length ? kids[0].n : 1;
+    const candidates = kids.map(c => ({
+      san: c.san,
+      barStyle: "display:block;height:100%;width:" + Math.round(100 * c.n / kidMax) + "%;background:" + winColor(c.score),
+      meta: c.n + " parties · " + Math.round(c.score * 100) + " %",
+      play: () => this.setState({ path: path.concat([c.san]), sel: null, flash: null })
+    }));
+
+    let name = null;
+    if (cur) {
+      const parts = cur.key.split(" ");
+      for (let i = parts.length; i > 0 && !name; i--) {
+        const k = parts.slice(0, i).join(" ");
+        if (NAMES[k]) name = NAMES[k] + (i === parts.length ? "" : " · suite");
+      }
+    }
+    const sc = cur ? cur.score : 0;
+    return {
+      squares,
+      isNew, hasStats: !!cur && !isNew && !free.length, emptyLine: !allSans.length,
+      eyebrow: isNew ? "Saisie manuelle" : off.length ? "Exploration" : (this.state.boardSrc === "cahier" ? "Cahier · répertoire voulu" : "Mes parties · ") + (this.state.color === "white" ? "blancs" : "noirs"),
+      title: isNew ? (this.state.newName || "Nouvelle ouverture") : (name || (path.length ? "Ligne sans nom" : "Position de départ")),
+      n: cur ? cur.n : 0,
+      wr: cur ? Math.round(sc * 100) + " %" : "—",
+      wrStyle: "color:var(--color-primary-ink)",
+      prob: cur ? Math.round(100 * cur.n / parentN) + " %" : "—",
+      wilson: cur ? Math.round(wilsonLower(sc, Math.max(2, cur.n)) * 100) + " %" : "—",
+      plyLabel: (allSans.length ? "coup " + (Math.floor((allSans.length - 1) / 2) + 1) + " · " : "") + (whiteToMove ? "aux blancs de jouer" : "aux noirs de jouer"),
+      moves, rows, candidates, noCandidates: candidates.length === 0,
+      flip: () => this.setState({ flipped: !this.state.flipped }),
+      nextLabel: "Coups suivants dans mes parties", showNext: !isNew,
+      offBook: free.length > 0 || off.length > 0,
+      newName: this.state.newName,
+      addLabel: isNew ? "Enregistrer dans le cahier" : "Ajouter au cahier d'ouverture",
+      setName: (e) => this.setState({ newName: e.target.value }),
+      first: () => this.setState({ path: [], free: [], sel: null }),
+      prev: () => free.length
+        ? this.setState({ free: free.slice(0, -1), sel: null })
+        : this.setState({ path: path.slice(0, -1), sel: null }),
+      next: () => kids.length && this.setState({ path: path.concat([kids[0].san]), sel: null }),
+      addToCahier: () => {
+        const key = allSans.join(" ");
+        this.setState({
+          cahier: this.state.cahier.indexOf(key) >= 0 ? this.state.cahier : this.state.cahier.concat([key]),
+          flash: "ajout"
+        });
+      },
+      kill: () => {
+        const key = path.join(" ");
+        this.setState({
+          killed: this.state.killed.indexOf(key) >= 0 ? this.state.killed : this.state.killed.concat([key]),
+          modal: null, hover: null
+        });
+      },
+      flash: !!this.state.flash,
+      flashText: this.state.flash === "ajout" ? "Ligne ajoutée au cahier. Elle porte l'étoile sur la carte." : ""
+    };
+  }
+
+  renderVals() {
+    const g = this.graph();
+    const sig = [this.state.view, this.state.cahierTab, this.state.color, this.seuil,
+      this.state.depth, (this.state.collapsed || []).join("|"), this.state.killed.join("|")].join("~");
+    if (sig !== this._sig) { this._sig = sig; this.scheduleCenter(true); }
+    else if (g.width !== this._gw) { this._gw = g.width; this.scheduleCenter(false); }
+    const useWilson = (this.props.metric ?? "Score brut") === "Wilson bas";
+    const zoom = this.state.zoom ?? 0.75;
+    const isParties = this.state.view === "parties";
+    const isCahier = !isParties;
+    const seg = (on) => "flex:1;height:34px;border-radius:var(--radius-sm);cursor:pointer;font:600 11px/1 var(--font-interface);letter-spacing:.09em;text-transform:uppercase;border:1px solid " +
+      (on ? "transparent;background:var(--color-primary);color:var(--color-ink-inverse)" : "rgba(0,0,0,.14);background:var(--color-bg);color:var(--color-ink)");
+    const tab = (on) => "height:34px;padding:0 14px;border-radius:var(--radius-sm);cursor:pointer;font:600 12px/1 var(--font-interface);letter-spacing:.09em;text-transform:uppercase;border:1px solid " +
+      (on ? "transparent;background:var(--color-bg);color:var(--color-ink)" : "rgba(253,248,232,.24);background:transparent;color:rgba(253,248,232,.75)");
+
+    const nodes = g.nodes.map(n => ({
+      ...n,
+      sanStyle: "position:absolute;left:" + n.x + "px;top:" + n.y + "px;transform:translate(-50%,-50%);pointer-events:none;white-space:nowrap;" +
+        "font:600 13px var(--font-mono);" +
+        "color:" + (n.key === "__root" ? "#fdf8e8" : n.byWhite ? "#fdf8e8" : "#1a1a1a") +
+        "",
+      starC: [n.x + n.r * 0.74, n.y - n.r * 0.74],
+      star: (() => { const cx = n.x + n.r * 0.74, cy = n.y - n.r * 0.74, s = 9; const pts = []; for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5; const rr = i % 2 ? s * 0.45 : s; pts.push((cx + rr * Math.cos(a)).toFixed(1) + " " + (cy + rr * Math.sin(a)).toFixed(1)); } return "M" + pts.join("L") + "Z"; })(),
+      enter: () => this.setState({ hover: n.key }),
+      click: (e) => {
+        if (this._dragMoved) return;
+        if (e && (e.altKey || e.metaKey) && n.key !== "__root") {
+          this.setState({ killed: this.state.killed.concat([n.key]), hover: null });
+          return;
+        }
+        // Un clic plie ou déplie ; le double-clic ouvre l'analyse.
+        clearTimeout(this._t1);
+        this._t1 = setTimeout(() => this.toggleCollapse(n.key), 220);
+      },
+      dblClick: () => { clearTimeout(this._t1); if (!this._dragMoved) this.openBoard(n.key); },
+      badgeStyle: n.hidden
+        ? "position:absolute;left:" + (n.x + n.r * 0.78) + "px;top:" + (n.y - n.r * 0.62) + "px;transform:translate(-50%,-50%);pointer-events:none;white-space:nowrap;" +
+          "padding:3px 7px;border-radius:var(--radius-sm);background:#1a1a1a;color:var(--color-ink-inverse);font:600 10px/1 var(--font-interface);letter-spacing:.04em;box-shadow:var(--shadow-soft)"
+        : "display:none",
+      badge: n.hidden ? "+" + n.hidden : "",
+      starX: n.x + n.r * 0.74, starY: n.y - n.r * 0.74,
+      ringInner: n.r - 7,
+      negative: n.byWhite === false && n.key !== "__root" && !this.isCahierView()
+    }));
+
+    // Empilement des étiquettes qui se chevauchent : chacune descend d'un cran.
+    const placed = [];
+    const labels = nodes.filter(n => n.name && (this.props.showNames ?? true))
+      .sort((a, b) => a.y - b.y || a.x - b.x)
+      .map(n => {
+        const halfW = 8 + n.name.length * 4.2;
+        let top = n.y + n.r + 7, guard = 0;
+        while (guard++ < 6 && placed.some(p => Math.abs(p.x - n.x) < p.halfW + halfW && Math.abs(p.top - top) < 22)) top += 22;
+        placed.push({ x: n.x, top, halfW });
+        return {
+      name: n.name,
+      style: "position:absolute;left:" + n.x + "px;top:" + top + "px;transform:translateX(-50%);pointer-events:none;white-space:nowrap;" +
+        "padding:5px 10px;border-radius:var(--radius-sm);background:#1a1a1a;color:#fdf8e8;" +
+        "font:600 12px/1 var(--font-display);letter-spacing:.08em;text-transform:uppercase"
+        };
+      });
+
+    const hv = nodes.find(n => n.key === this.state.hover);
+    let tip = null;
+    if (hv && hv.key !== "__root") {
+      const nd = hv.nd;
+      const parent = hv.key.indexOf(" ") > 0 ? findNode(this.activeTree(), hv.key.split(" ").slice(0, -1).join(" ")) : this.activeTree();
+      const flipX = hv.x + 290 > g.width;
+      const x = flipX ? hv.x - hv.r - 262 : hv.x + hv.r + 14;
+      const y = Math.max(8, Math.min(g.height - 210, hv.y - 70));
+      const line = hv.key.split(" ").map((s, i) => (i % 2 === 0 ? (i / 2 + 1) + "." : "") + s).join(" ");
+      tip = {
+        tone: isCahier ? "#4a453c" : winColor(nd.score),
+        noStats: isCahier,
+        style: "position:absolute;left:" + x + "px;top:" + y + "px;width:248px;padding:12px 14px 12px 20px;box-sizing:border-box;pointer-events:none;" +
+          "background:var(--color-bg);border:var(--border-hairline);border-radius:var(--radius-sm);box-shadow:var(--shadow-soft);z-index:5",
+        eyebrow: NAMES[hv.key] || ("coup " + (Math.floor(nd.ply / 2) + 1) + (nd.ply % 2 === 0 ? " · blancs" : " · noirs")),
+        line: line.length > 34 ? "…" + line.slice(-33) : line,
+        metricLabel: useWilson ? "wilson bas" : "win rate",
+        winrate: Math.round((useWilson ? wilsonLower(nd.score, Math.max(2, nd.n)) : nd.score) * 100) + " %",
+        wdl: nd.n + " parties jouées",
+        prob: "prob. de jeu " + Math.round(100 * nd.n / (parent.n || 1)) + " % à ce nœud",
+        conf: this.onCahierLine(hv.key) ? "sur une ligne du cahier" : "hors cahier",
+        showStats: !isCahier,
+        side: (nd.ply % 2 === 0 ? "Coup des blancs" : "Coup des noirs") + " · ligne préparée",
+        hint: (this.state.collapsed || []).indexOf(hv.key) >= 0 ? "Clic : déplier" : "Clic : plier"
+      };
+    }
+
+    const speeds = ["Bullet", "Blitz", "Rapide", "Classique"].map(label => {
+      const on = this.state.speeds.indexOf(label) >= 0;
+      return {
+        label,
+        style: "height:30px;padding:0 10px;white-space:nowrap;border-radius:var(--radius-sm);cursor:pointer;font:600 11px/1 var(--font-interface);letter-spacing:.06em;border:1px solid " +
+          (on ? "var(--tint-primary-bc);background:var(--tint-primary-bg);color:var(--color-primary-ink)" : "rgba(0,0,0,.14);background:var(--color-bg);color:var(--color-ink-muted)"),
+        toggle: () => this.setState({ speeds: on ? this.state.speeds.filter(s => s !== label) : this.state.speeds.concat([label]) })
+      };
+    });
+
+    const badgeStyle = (t) => "display:inline-block;white-space:nowrap;font:600 11px var(--font-interface);letter-spacing:.09em;text-transform:uppercase;padding:4px 8px;border-radius:var(--radius-sm);border:1px solid var(--tint-" + t + "-bc);background:var(--tint-" + t + "-bg);color:var(--color-" + (t === "neutral" ? "ink" : t + "-ink") + ")";
+
+    const boardV = this.boardVals();
+    return {
+      isParties, isCahier,
+      railOpen: this.state.rail !== false, railClosed: this.state.rail === false,
+      toggleRail: () => this.setState({ rail: this.state.rail === false }),
+      showGraph: isParties || this.state.cahierTab === "arbre",
+      showChapitres: isCahier && this.state.cahierTab === "chapitres",
+      pageTitle: isParties ? "Carte de mes ouvertures" : this.state.cahierTab === "arbre" ? "Le répertoire voulu" : "Chapitres du cahier",
+      pageSub: isParties
+        ? "Racine en bas, exploration vers le haut. Clic : plier ou déplier une branche. Double-clic : ouvrir l'analyse. Alt-clic : tuer."
+        : this.state.cahierTab === "arbre"
+          ? "Écrit à la main : ce que je prépare, pas ce que je joue. Mêmes gestes que la carte des parties."
+          : "Un chapitre par ouverture, avec la note et l'état de révision.",
+      gw: g.width, gh: g.height,
+      canvasStyle: "position:relative;width:" + g.width + "px;height:" + g.height + "px;transform:scale(" + zoom + ");transform-origin:0 0",
+      canvasOuter: "position:relative;width:" + Math.round(g.width * zoom) + "px;height:" + Math.round(g.height * zoom) + "px;margin:-38px auto 0",
+      scrollRef: this.attachScroll,
+      scrollStyle: "flex:1;min-height:0;overflow:auto;background:var(--color-bg);position:relative;cursor:grab;touch-action:none;user-select:none",
+      onPanStart: (e) => {
+        const el = this._scroll;
+        if (!el || e.button === 2) return;
+        e.preventDefault();
+        const sx = e.clientX, sy = e.clientY, l0 = el.scrollLeft, t0 = el.scrollTop;
+        this._dragMoved = false;
+        el.style.cursor = "grabbing";
+        const move = (ev) => {
+          const dx = ev.clientX - sx, dy = ev.clientY - sy;
+          if (!this._dragMoved && Math.abs(dx) + Math.abs(dy) < 4) return;
+          this._dragMoved = true;
+          this._userPanned = true;
+          el.scrollLeft = l0 - dx;
+          el.scrollTop = t0 - dy;
+        };
+        const up = () => {
+          el.style.cursor = "grab";
+          window.removeEventListener("pointermove", move);
+          window.removeEventListener("pointerup", up);
+          // laisse passer le clic de nœud seulement si rien n'a bougé
+          setTimeout(() => { this._dragMoved = false; }, 0);
+        };
+        window.addEventListener("pointermove", move);
+        window.addEventListener("pointerup", up);
+      },
+      onWheel: (e) => {
+        if (!e.ctrlKey && !e.metaKey) {
+          const el = this._scroll;
+          if (el && e.shiftKey) { el.scrollLeft += e.deltaY; this._userPanned = true; }
+          else if (el && el.scrollHeight <= el.clientHeight && e.deltaY) { el.scrollLeft += e.deltaY; this._userPanned = true; }
+          return;
+        }
+        e.preventDefault();
+        const z = Math.max(0.3, Math.min(1.6, zoom * (e.deltaY < 0 ? 1.12 : 0.89)));
+        this.setState({ zoom: Math.round(z * 100) / 100 }, () => this.scheduleCenter(false));
+      },
+      zoomLabel: Math.round(zoom * 100) + " %",
+      zooms: [0.5, 0.75, 1].map(z => ({
+        label: Math.round(z * 100) + " %",
+        style: "height:28px;padding:0 10px;white-space:nowrap;border-radius:var(--radius-sm);cursor:pointer;font:600 10px/1 var(--font-interface);letter-spacing:.09em;border:1px solid " +
+          (Math.abs(z - zoom) < 0.005 ? "transparent;background:var(--color-ink-surface);color:var(--color-ink-inverse)" : "rgba(26,26,26,.2);background:var(--color-surface);color:var(--color-ink-muted)"),
+        pick: () => this.setState({ zoom: z })
+      })),
+      nodes, labels, links: g.links, tip, hasTip: !!tip,
+      depth: this.state.depth ?? 8,
+      onDepth: (e) => this.setState({ depth: +e.target.value, hover: null }),
+      minGames: this.seuil, speeds,
+      segWhite: seg(this.state.color === "white"), segBlack: seg(this.state.color === "black"),
+      tabPartiesStyle: tab(isParties), tabCahierStyle: tab(isCahier),
+      segArbre: seg(this.state.cahierTab === "arbre"), segChap: seg(this.state.cahierTab === "chapitres"),
+      killedCount: this.state.killed.length, noKilled: this.state.killed.length === 0,
+      killedList: this.state.killed.map(k => {
+        // Nom de l'ouverture la plus proche en remontant la ligne tuée.
+        const parts = k.split(" ");
+        let name = null, exact = false;
+        for (let i = parts.length; i > 0 && !name; i--) {
+          const key = parts.slice(0, i).join(" ");
+          if (NAMES[key]) { name = NAMES[key]; exact = i === parts.length; }
+        }
+        return {
+          name: name ? (exact ? name : name + " · suite") : "Ligne sans nom",
+          line: parts.map((s, i) => (i % 2 === 0 ? (i / 2 + 1) + "." : "") + s).join(" "),
+          revive: () => this.setState({ killed: this.state.killed.filter(x => x !== k) })
+        };
+      }),
+      chapters: CHAPTERS.map(c => ({
+        ...c, badgeStyle: badgeStyle(c.badgeTone),
+        barStyle: "width:" + c.pct + "%;height:100%;background:" + c.tone,
+        progress: c.pct + " % écrit",
+        open: () => this.setState({ view: "parties", modal: "board", boardSrc: "parties", path: c.ref.split(" "), free: [], sel: null, flash: null })
+      })),
+      sources: SOURCES.map((s, i) => ({
+        ...s,
+        style: "text-align:left;padding:12px 14px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid " +
+          (this.state.srcPick === i ? "var(--color-primary);background:var(--tint-primary-bg)" : "rgba(0,0,0,.14);background:var(--color-surface)"),
+        pick: () => this.setState({ srcPick: i })
+      })),
+      board: boardV,
+      boardOpen: this.state.modal === "board" || this.state.modal === "new",
+      squares: boardV.squares,
+      importOpen: this.state.modal === "import",
+      goParties: () => this.setState({ view: "parties", hover: null }),
+      goCahier: () => this.setState({ view: "cahier", hover: null }),
+      cahierArbre: () => this.setState({ cahierTab: "arbre", hover: null }),
+      cahierChapitres: () => this.setState({ cahierTab: "chapitres" }),
+      openImport: () => this.setState({ modal: "import" }),
+      closeImport: () => this.setState({ modal: null }),
+      openNew: () => this.setState({ modal: "new", path: [], free: [], sel: null, newName: "", flash: null }),
+      closeBoard: () => this.setState({ modal: null, flash: null }),
+      clearHover: () => this.setState({ hover: null }),
+      stop: (e) => e.stopPropagation()
+    };
+  }
+
+  boardSquares() { return []; }
+}
+</script>
+</body>
+</html>

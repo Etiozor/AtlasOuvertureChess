@@ -5,11 +5,12 @@ la config (ATLAS_DB) -> routage par utilisateur trivial pour le partage futur.
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
+from pydantic import BaseModel
 
-from . import aggregate, db
+from . import aggregate, db, ingest
 
 DB_PATH = os.environ.get("ATLAS_DB", "atlas.db")
 
@@ -81,10 +82,49 @@ def meta():
             "SELECT MIN(played_at) lo, MAX(played_at) hi FROM games").fetchone()
         counts = {r["my_color"]: r["n"] for r in conn.execute(
             "SELECT my_color, COUNT(*) n FROM games GROUP BY my_color")}
+        sync = {r["source"]: {"username": r["username"], "last_synced": r["last_synced"]}
+                for r in conn.execute("SELECT source, username, last_synced FROM sync_state")}
         return {
             "speeds": speeds, "sources": sources,
             "date_from": bounds["lo"], "date_to": bounds["hi"],
-            "counts_by_color": counts,
+            "counts_by_color": counts, "sync": sync,
         }
+    finally:
+        conn.close()
+
+
+class IngestReq(BaseModel):
+    source: str        # "lichess" | "chesscom"
+    username: str
+
+
+@app.post("/api/ingest")
+def do_ingest(req: IngestReq):
+    """Va chercher les parties d'un joueur (incrémental) et les insère.
+    Synchrone : le front affiche un état d'attente. Le curseur de sync évite de
+    retélécharger les parties déjà en base (relance = actualisation rapide)."""
+    if req.source not in ("lichess", "chesscom"):
+        raise HTTPException(400, "source invalide (lichess ou chesscom)")
+    username = req.username.strip()
+    if not username:
+        raise HTTPException(400, "pseudo requis")
+
+    from . import sources  # import tardif : ne charge requests qu'ici
+
+    conn = _conn()
+    try:
+        cursor = db.get_cursor(conn, req.source)
+        if req.source == "lichess":
+            records, new_cursor = sources.lichess(username, cursor)
+        else:
+            records, new_cursor = sources.chesscom(username, cursor)
+        try:
+            seen = ingest.ingest_games(conn, req.source, username, records(), new_cursor)
+        except Exception as e:  # réseau, 404 pseudo inconnu, 429…
+            raise HTTPException(502, f"Récupération impossible : {e}")
+        total = conn.execute("SELECT COUNT(*) c FROM games").fetchone()["c"]
+        counts = {r["my_color"]: r["n"] for r in conn.execute(
+            "SELECT my_color, COUNT(*) n FROM games GROUP BY my_color")}
+        return {"seen": seen, "total": total, "counts_by_color": counts}
     finally:
         conn.close()
